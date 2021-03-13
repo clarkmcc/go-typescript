@@ -3,8 +3,8 @@ package typescript
 import (
 	"encoding/base64"
 	"fmt"
-	"github.com/clarkmcc/goja-typescript/utils"
-	"github.com/clarkmcc/goja-typescript/versions"
+	"github.com/clarkmcc/go-typescript/utils"
+	"github.com/clarkmcc/go-typescript/versions"
 	"github.com/dop251/goja"
 )
 

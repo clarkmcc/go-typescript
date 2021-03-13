@@ -2,7 +2,7 @@ package main
 
 import (
 	_ "embed"
-	typescript "github.com/clarkmcc/goja-typescript"
+	typescript "github.com/clarkmcc/go-typescript"
 	"log"
 )
 

@@ -1,4 +1,4 @@
-module github.com/clarkmcc/goja-typescript
+module github.com/clarkmcc/go-typescript
 
 go 1.16
 
