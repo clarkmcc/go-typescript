@@ -1,6 +1,8 @@
 # Goja Typescript Transpiler
 This package provides a simple interface using [github.com/dop251/goja](github.com/dop251/goja) under the hood to allow you to transpile Typescript to Javascript in Go. This package has no direct dependencies besides testing utilities and has a 95% test coverage rate.
 
+Feel free to contribute. This package is fresh and may experience some changes before it's first tagged release.
+
 ## Example
 For more examples, see the `examples/` directory of this repository
 ### Transpile Strings
