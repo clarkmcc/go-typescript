@@ -27,6 +27,14 @@ func (r *Registry) Register(tag string, source string) error {
 	return nil
 }
 
+// MustRegister calls Register and panics if we're unable to register the version.
+func (r *Registry) MustRegister(tag string, source string) {
+	err := r.Register(tag, source)
+	if err != nil {
+		panic(err)
+	}
+}
+
 // Get attempts to return the typescript source for the specified tag if it exists, otherwise
 // it returns an error with a list of typescript versions that are supported by this registry.
 func (r *Registry) Get(tag string) (*goja.Program, error) {

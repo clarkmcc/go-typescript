@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/clarkmcc/go-typescript/utils"
 	"github.com/clarkmcc/go-typescript/versions"
+	_ "github.com/clarkmcc/go-typescript/versions/v4.2.3"
 	"github.com/dop251/goja"
 )
 

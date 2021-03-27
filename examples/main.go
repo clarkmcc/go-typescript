@@ -3,6 +3,7 @@ package main
 import (
 	_ "embed"
 	typescript "github.com/clarkmcc/go-typescript"
+	_ "github.com/clarkmcc/go-typescript/versions/v4.2.2"
 	"log"
 )
 
