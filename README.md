@@ -24,11 +24,33 @@ output, err = typescript.TranspileString(script, nil, typescript.WithCompileOpti
 ```
 
 ### Custom Typescript Version
-You can optionally specify which typescript version you want to compile using. These versions are based on the Git tags from the Typescript repository.
+#### Default Registry
+You can optionally specify which typescript version you want to compile using. These versions are based on the Git tags from the Typescript repository. If you're using a version that is supported in this package, you'll need to import the version package as a side-effect and will automatically be registered to the default registry.
 ```go
-output, err := typescript.Transpile(reader, nil, typescript.WithVersion("v4.2.2"))
+import _ "github.com/clarkmcc/go-typescript/versions/v4.2.2"
+
+func main() {
+    output, err := typescript.Transpile(reader, nil, typescript.WithVersion("v4.2.2"))
+}
 ```
 
+#### Custom Registry
+You may want to use a custom version registry rather than the default registry.
+
+```go
+import version "github.com/clarkmcc/go-typescript/versions/v4.2.2"
+
+func main() {
+    registry := versions.NewRegistry()
+    registry.MustRegister("v4.2.3", version.Source)
+    
+    output, err := typescript.TranspileString("let a:number = 10;", &typescript.Config{
+        TypescriptSource: program,
+    })
+}
+```
+
+#### Custom Version
 Need a different typescript version than the tags we support in this repo? No problem, you can load your own:
 
 ```go

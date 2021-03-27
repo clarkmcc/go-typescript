@@ -7,6 +7,7 @@ import (
 
 func TestRegistry_Get(t *testing.T) {
 	t.Run("KnownTag", func(t *testing.T) {
+		DefaultRegistry.MustRegister("v4.2.3", "")
 		_, err := DefaultRegistry.Get("v4.2.3")
 		require.NoError(t, err)
 	})

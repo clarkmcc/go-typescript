@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"github.com/dop251/goja"
 	"io"
 	"io/ioutil"
 	"strings"
@@ -25,6 +26,9 @@ func TranspileString(script string, cfg *Config, opts ...OptionFunc) (string, er
 func TranspileCtx(ctx context.Context, script io.Reader, cfg *Config, opts ...OptionFunc) (string, error) {
 	if cfg == nil {
 		cfg = NewDefaultConfig()
+	}
+	if cfg.Runtime == nil {
+		cfg.Runtime = goja.New()
 	}
 	for _, fn := range opts {
 		fn(cfg)
