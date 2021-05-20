@@ -9,14 +9,21 @@ import (
 	"github.com/dop251/goja"
 )
 
-// OptionFunc allows for easy chaining of pre-built config modifiers such as WithVersion.
-type OptionFunc func(*Config)
+// TranspileOptionFunc allows for easy chaining of pre-built config modifiers such as WithVersion.
+type TranspileOptionFunc func(*Config)
 
 // Config defines the behavior of the typescript compiler.
 type Config struct {
 	CompileOptions   map[string]interface{}
 	TypescriptSource *goja.Program
 	Runtime          *goja.Runtime
+
+	// If a module is exported by the typescript compiler, this is the name the module will be called
+	ModuleName string
+
+	// Verbose enables built-in verbose logging for debugging purposes.
+	Verbose bool
+
 	// decoderName refers to a random generated string assigned to a function in the runtimes
 	// global scope which is analogous to atob(), or a base64 decoding function. This function
 	// is needed in the transpile process to ensure that we don't have any issues with string
@@ -50,33 +57,49 @@ func NewDefaultConfig() *Config {
 		Runtime:          goja.New(),
 		CompileOptions:   nil,
 		TypescriptSource: versions.DefaultRegistry.MustGet("v4.2.3"),
+		ModuleName:       "default",
 	}
 }
 
 // WithVersion loads the provided tagged typescript source from the default registry
-func WithVersion(tag string) OptionFunc {
+func WithVersion(tag string) TranspileOptionFunc {
 	return func(config *Config) {
 		config.TypescriptSource = versions.DefaultRegistry.MustGet(tag)
 	}
 }
 
 // WithCompileOptions sets the compile options that will be passed to the typescript compiler.
-func WithCompileOptions(options map[string]interface{}) OptionFunc {
+func WithCompileOptions(options map[string]interface{}) TranspileOptionFunc {
 	return func(config *Config) {
 		config.CompileOptions = options
 	}
 }
 
 // WithRuntime allows you to over-ride the default runtime
-func WithRuntime(runtime *goja.Runtime) OptionFunc {
+func WithRuntime(runtime *goja.Runtime) TranspileOptionFunc {
 	return func(config *Config) {
 		config.Runtime = runtime
 	}
 }
 
+// WithModuleName determines the module name applied to the typescript module if applicable. This is only needed to
+// customize the module name if the typescript module mode is AMD or SystemJS.
+func WithModuleName(name string) TranspileOptionFunc {
+	return func(config *Config) {
+		config.ModuleName = name
+	}
+}
+
+// WithVerbose enables verbose logging for debugging purposes.
+func WithVerbose() TranspileOptionFunc {
+	return func(config *Config) {
+		config.Verbose = true
+	}
+}
+
 // withFailOnInitialize used to test a config initialization failure. This is not exported because
 // it's used only for testing.
-func withFailOnInitialize() OptionFunc {
+func withFailOnInitialize() TranspileOptionFunc {
 	return func(config *Config) {
 		config.failOnInitialize = true
 	}

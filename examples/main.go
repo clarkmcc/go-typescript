@@ -13,21 +13,21 @@ var script string
 
 func main() {
 	// The most basic implementation of the transpiler
-	output, err := typescript.TranspileString(script, nil)
+	output, err := typescript.TranspileString(script)
 	if err != nil {
 		log.Fatal(err)
 	}
 	log.Println(output)
 
 	// You can specify a custom typescript version
-	output, err = typescript.TranspileString(script, nil, typescript.WithVersion("v4.2.2"))
+	output, err = typescript.TranspileString(script, typescript.WithVersion("v4.2.2"))
 	if err != nil {
 		log.Fatal(err)
 	}
 	log.Println(output)
 
 	// Or provide some typescript compiler options using any of the options here https://www.typescriptlang.org/docs/handbook/compiler-options.html
-	output, err = typescript.TranspileString(script, nil, typescript.WithCompileOptions(map[string]interface{}{
+	output, err = typescript.TranspileString(script, typescript.WithCompileOptions(map[string]interface{}{
 		"module": "none",
 		"strict": true,
 	}))

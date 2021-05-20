@@ -25,58 +25,42 @@ func TestConfig_Initialize(t *testing.T) {
 
 func TestVersionLoading(t *testing.T) {
 	t.Run("v3.8.3", func(t *testing.T) {
-		output, err := TranspileString("let a: number = 10;", &Config{
-			TypescriptSource: versions.DefaultRegistry.MustGet("v3.8.3"),
-		})
+		output, err := TranspileString("let a: number = 10;", WithVersion("v3.8.3"))
 		require.NoError(t, err)
 		require.Equal(t, "var a = 10;", output)
 	})
 	t.Run("v3.9.9", func(t *testing.T) {
-		output, err := TranspileString("let a: number = 10;", &Config{
-			TypescriptSource: versions.DefaultRegistry.MustGet("v3.9.9"),
-		})
+		output, err := TranspileString("let a: number = 10;", WithVersion("v3.9.9"))
 		require.NoError(t, err)
 		require.Equal(t, "var a = 10;", output)
 	})
 	t.Run("v4.1.2", func(t *testing.T) {
-		output, err := TranspileString("let a: number = 10;", &Config{
-			TypescriptSource: versions.DefaultRegistry.MustGet("v4.1.2"),
-		})
+		output, err := TranspileString("let a: number = 10;", WithVersion("v4.1.2"))
 		require.NoError(t, err)
 		require.Equal(t, "var a = 10;", output)
 	})
 	t.Run("v4.1.3", func(t *testing.T) {
-		output, err := TranspileString("let a: number = 10;", &Config{
-			TypescriptSource: versions.DefaultRegistry.MustGet("v4.1.3"),
-		})
+		output, err := TranspileString("let a: number = 10;", WithVersion("v4.1.3"))
 		require.NoError(t, err)
 		require.Equal(t, "var a = 10;", output)
 	})
 	t.Run("v4.1.4", func(t *testing.T) {
-		output, err := TranspileString("let a: number = 10;", &Config{
-			TypescriptSource: versions.DefaultRegistry.MustGet("v4.1.4"),
-		})
+		output, err := TranspileString("let a: number = 10;", WithVersion("v4.1.4"))
 		require.NoError(t, err)
 		require.Equal(t, "var a = 10;", output)
 	})
 	t.Run("v4.1.5", func(t *testing.T) {
-		output, err := TranspileString("let a: number = 10;", &Config{
-			TypescriptSource: versions.DefaultRegistry.MustGet("v4.1.5"),
-		})
+		output, err := TranspileString("let a: number = 10;", WithVersion("v4.1.5"))
 		require.NoError(t, err)
 		require.Equal(t, "var a = 10;", output)
 	})
 	t.Run("v4.2.2", func(t *testing.T) {
-		output, err := TranspileString("let a: number = 10;", &Config{
-			TypescriptSource: versions.DefaultRegistry.MustGet("v4.2.2"),
-		})
+		output, err := TranspileString("let a: number = 10;", WithVersion("v4.2.2"))
 		require.NoError(t, err)
 		require.Equal(t, "var a = 10;", output)
 	})
 	t.Run("v4.2.3", func(t *testing.T) {
-		output, err := TranspileString("let a: number = 10;", &Config{
-			TypescriptSource: versions.DefaultRegistry.MustGet("v4.2.3"),
-		})
+		output, err := TranspileString("let a: number = 10;", WithVersion("v4.2.3"))
 		require.NoError(t, err)
 		require.Equal(t, "var a = 10;", output)
 	})
@@ -86,9 +70,7 @@ func TestCustomRegistry(t *testing.T) {
 	registry := versions.NewRegistry()
 	registry.MustRegister("v4.2.3", v423.Source)
 
-	output, err := TranspileString("let a: number = 10;", &Config{
-		TypescriptSource: registry.MustGet("v4.2.3"),
-	})
+	output, err := TranspileString("let a: number = 10;", WithVersion("v4.2.3"))
 	require.NoError(t, err)
 	require.Equal(t, "var a = 10;", output)
 }
