@@ -24,6 +24,10 @@ type Config struct {
 	// Verbose enables built-in verbose logging for debugging purposes.
 	Verbose bool
 
+	// PreventCancellation indicates that the transpiler should not handle context cancellation. This
+	// should be used when external runtimes are configured AND cancellation is handled by those runtimes.
+	PreventCancellation bool
+
 	// decoderName refers to a random generated string assigned to a function in the runtimes
 	// global scope which is analogous to atob(), or a base64 decoding function. This function
 	// is needed in the transpile process to ensure that we don't have any issues with string
@@ -90,10 +94,10 @@ func WithModuleName(name string) TranspileOptionFunc {
 	}
 }
 
-// WithVerbose enables verbose logging for debugging purposes.
-func WithVerbose() TranspileOptionFunc {
+// WithPreventCancellation prevents the transpiler runtime from handling its own context cancellation.
+func WithPreventCancellation() TranspileOptionFunc {
 	return func(config *Config) {
-		config.Verbose = true
+		config.PreventCancellation = true
 	}
 }
 
