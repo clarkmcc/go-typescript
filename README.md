@@ -4,7 +4,6 @@ This package provides a simple interface using [github.com/dop251/goja](github.c
 Feel free to contribute. This package is fresh and may experience some changes before it's first tagged release.
 
 ## Transpiling Examples
-For more examples, see the `examples/` directory of this repository
 ### Transpile Strings
 ```go
 output, err := typescript.TranspileString("let a: number = 10;", nil)
