@@ -5,18 +5,29 @@ import (
 	"fmt"
 	"github.com/clarkmcc/go-typescript/utils"
 	"github.com/clarkmcc/go-typescript/versions"
-	_ "github.com/clarkmcc/go-typescript/versions/v4.2.3"
+	_ "github.com/clarkmcc/go-typescript/versions/v4.2.4"
 	"github.com/dop251/goja"
 )
 
-// OptionFunc allows for easy chaining of pre-built config modifiers such as WithVersion.
-type OptionFunc func(*Config)
+// TranspileOptionFunc allows for easy chaining of pre-built config modifiers such as WithVersion.
+type TranspileOptionFunc func(*Config)
 
 // Config defines the behavior of the typescript compiler.
 type Config struct {
 	CompileOptions   map[string]interface{}
 	TypescriptSource *goja.Program
 	Runtime          *goja.Runtime
+
+	// If a module is exported by the typescript compiler, this is the name the module will be called
+	ModuleName string
+
+	// Verbose enables built-in verbose logging for debugging purposes.
+	Verbose bool
+
+	// PreventCancellation indicates that the transpiler should not handle context cancellation. This
+	// should be used when external runtimes are configured AND cancellation is handled by those runtimes.
+	PreventCancellation bool
+
 	// decoderName refers to a random generated string assigned to a function in the runtimes
 	// global scope which is analogous to atob(), or a base64 decoding function. This function
 	// is needed in the transpile process to ensure that we don't have any issues with string
@@ -49,34 +60,59 @@ func NewDefaultConfig() *Config {
 	return &Config{
 		Runtime:          goja.New(),
 		CompileOptions:   nil,
-		TypescriptSource: versions.DefaultRegistry.MustGet("v4.2.3"),
+		TypescriptSource: versions.DefaultRegistry.MustGet("v4.2.4"),
+		ModuleName:       "default",
 	}
 }
 
 // WithVersion loads the provided tagged typescript source from the default registry
-func WithVersion(tag string) OptionFunc {
+func WithVersion(tag string) TranspileOptionFunc {
 	return func(config *Config) {
 		config.TypescriptSource = versions.DefaultRegistry.MustGet(tag)
 	}
 }
 
+// WithTypescriptSource configures a Typescript source from the provided typescript source string which
+// is compiled by goja when the config is initialized. This function will panic if the Typescript source
+// is invalid.
+func WithTypescriptSource(src string) TranspileOptionFunc {
+	return func(config *Config) {
+		config.TypescriptSource = goja.MustCompile("", src, true)
+	}
+}
+
 // WithCompileOptions sets the compile options that will be passed to the typescript compiler.
-func WithCompileOptions(options map[string]interface{}) OptionFunc {
+func WithCompileOptions(options map[string]interface{}) TranspileOptionFunc {
 	return func(config *Config) {
 		config.CompileOptions = options
 	}
 }
 
 // WithRuntime allows you to over-ride the default runtime
-func WithRuntime(runtime *goja.Runtime) OptionFunc {
+func WithRuntime(runtime *goja.Runtime) TranspileOptionFunc {
 	return func(config *Config) {
 		config.Runtime = runtime
 	}
 }
 
+// WithModuleName determines the module name applied to the typescript module if applicable. This is only needed to
+// customize the module name if the typescript module mode is AMD or SystemJS.
+func WithModuleName(name string) TranspileOptionFunc {
+	return func(config *Config) {
+		config.ModuleName = name
+	}
+}
+
+// WithPreventCancellation prevents the transpiler runtime from handling its own context cancellation.
+func WithPreventCancellation() TranspileOptionFunc {
+	return func(config *Config) {
+		config.PreventCancellation = true
+	}
+}
+
 // withFailOnInitialize used to test a config initialization failure. This is not exported because
 // it's used only for testing.
-func withFailOnInitialize() OptionFunc {
+func withFailOnInitialize() TranspileOptionFunc {
 	return func(config *Config) {
 		config.failOnInitialize = true
 	}
