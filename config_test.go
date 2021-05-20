@@ -64,6 +64,11 @@ func TestVersionLoading(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, "var a = 10;", output)
 	})
+	t.Run("v4.2.4", func(t *testing.T) {
+		output, err := TranspileString("let a: number = 10;", WithVersion("v4.2.4"))
+		require.NoError(t, err)
+		require.Equal(t, "var a = 10;", output)
+	})
 }
 
 func TestCustomRegistry(t *testing.T) {
