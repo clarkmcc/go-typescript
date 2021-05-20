@@ -16,6 +16,10 @@ type EvaluateOptionFunc func(cfg *EvaluateConfig)
 type EvaluateConfig struct {
 	// EvaluateBefore are sequentially evaluated in the Javascript runtime before evaluating the provided script.
 	EvaluateBefore []io.Reader
+	// ScriptHooks are called after transpiling (if applicable) with the script that will be evaluated immediately
+	// before evaluation. If an error is returned from any of these functions, the evaluation process is aborted.
+	// The script hook can make modifications and return them to the script if necessary.
+	ScriptHooks []func(string) (string, error)
 	// Transpile indicates whether the script should be transpiled before its evaluated in the runtime.
 	Transpile bool
 	// TranspileOptions are options passed directly to the transpiler if applicable
@@ -33,6 +37,13 @@ func (cfg *EvaluateConfig) ApplyDefaults() {
 
 func (cfg *EvaluateConfig) HasEvaluateBefore() bool {
 	return len(cfg.EvaluateBefore) > 0
+}
+
+// WithEvaluationRuntime allows callers to use their own runtimes with the evaluator.
+func WithEvaluationRuntime(runtime *goja.Runtime) EvaluateOptionFunc {
+	return func(cfg *EvaluateConfig) {
+		cfg.Runtime = runtime
+	}
 }
 
 // WithEvaluateBefore adds scripts that should be evaluated before evaluating the provided script. Each provided script
@@ -60,6 +71,13 @@ func WithTranspile() EvaluateOptionFunc {
 func WithTranspileOptions(opts ...TranspileOptionFunc) EvaluateOptionFunc {
 	return func(cfg *EvaluateConfig) {
 		cfg.TranspileOptions = append(cfg.TranspileOptions, opts...)
+	}
+}
+
+// WithScriptHook adds a script hook that should be evaluated immediately before the actual script evaluation
+func WithScriptHook(hook func(script string) (string, error)) EvaluateOptionFunc {
+	return func(cfg *EvaluateConfig) {
+		cfg.ScriptHooks = append(cfg.ScriptHooks, hook)
 	}
 }
 
@@ -128,6 +146,12 @@ func EvaluateCtx(ctx context.Context, src io.Reader, opts ...EvaluateOptionFunc)
 		script, err = TranspileCtx(ctx, strings.NewReader(script), opts...)
 		if err != nil {
 			return nil, fmt.Errorf("transpiling script: %w", err)
+		}
+	}
+	for _, h := range cfg.ScriptHooks {
+		script, err = h(script)
+		if err != nil {
+			return nil, fmt.Errorf("running script hook: %w", err)
 		}
 	}
 	result, err = cfg.Runtime.RunString(script)

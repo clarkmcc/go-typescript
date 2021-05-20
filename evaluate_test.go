@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/dop251/goja"
 	"github.com/stretchr/testify/require"
 	"io"
 	"strings"
@@ -62,6 +63,24 @@ func TestEvaluateCtx(t *testing.T) {
 			WithEvaluateBefore(&failingReader{}))
 		require.Error(t, err)
 		require.Contains(t, err.Error(), "reading evaluate befores")
+	})
+
+	t.Run("custom runtime", func(t *testing.T) {
+		runtime := goja.New()
+		result, err := Evaluate(strings.NewReader("var a = 10; a;"),
+			WithEvaluationRuntime(runtime))
+		require.NoError(t, err)
+		require.Equal(t, int64(10), result.ToInteger())
+	})
+
+	t.Run("script hook", func(t *testing.T) {
+		script := "var a = 10;"
+		_, err := Evaluate(strings.NewReader(script),
+			WithScriptHook(func(s string) (string, error) {
+				require.Equal(t, script, s)
+				return script, nil
+			}))
+		require.NoError(t, err)
 	})
 }
 
