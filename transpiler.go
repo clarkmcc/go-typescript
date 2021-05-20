@@ -5,7 +5,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/dop251/goja"
 	"io"
 	"io/ioutil"
 	"log"
@@ -26,23 +25,28 @@ func TranspileString(script string, opts ...TranspileOptionFunc) (string, error)
 // in goja, context cancellation only works while in JavaScript code, it does not interrupt native Go functions.
 func TranspileCtx(ctx context.Context, script io.Reader, opts ...TranspileOptionFunc) (string, error) {
 	cfg := NewDefaultConfig()
-	if cfg.Runtime == nil {
-		cfg.Runtime = goja.New()
-	}
 	for _, fn := range opts {
 		fn(cfg)
 	}
 	// Handle context cancellation
-	done := make(chan struct{})
-	defer close(done)
-	go func() {
-		select {
-		case <-ctx.Done():
-			cfg.Runtime.Interrupt("halt")
-		case <-done:
-			return
-		}
-	}()
+	if !cfg.PreventCancellation {
+		done := make(chan struct{})
+		started := make(chan struct{})
+		defer close(done)
+		go func() {
+			// Inform the parent go-routine that we've started, this prevents a race condition where the
+			// runtime would beat the context cancellation in unit tests even though the context started
+			// out in a 'cancelled' state.
+			close(started)
+			select {
+			case <-ctx.Done():
+				cfg.Runtime.Interrupt("halt")
+			case <-done:
+				return
+			}
+		}()
+		<-started
+	}
 	err := cfg.Initialize()
 	if err != nil {
 		return "", fmt.Errorf("initializing config: %w", err)

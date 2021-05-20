@@ -2,38 +2,20 @@ package typescript
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"github.com/stretchr/testify/require"
+	"io"
 	"strings"
 	"testing"
 )
 
 var (
 	amdModuleScript = strings.TrimSpace(`
-		define("myModule", ["require", "exports"], function (require, exports, core_1) {
+		define("myModule", ["exports"], function (exports, core_1) {
 			Object.defineProperty(exports, "__esModule", { value: true });
 			exports.multiply = void 0;
-			function multiply() {
-				var nums = [];
-				for (var _i = 0; _i < arguments.length; _i++) {
-					nums[_i] = arguments[_i];
-				}
-				if (Array.isArray(nums)) {
-					if (nums.length === 0) {
-						return 0;
-					}
-					else if (nums.length === 1) {
-						return nums[0];
-					}
-				}
-				else {
-					return 0;
-				}
-				var a = nums[0];
-				for (var i = 1; i < nums.length; i++) {
-					a += a * nums[i];
-				}
-				return a;
-			}
+			var multiply = function (a, b) { return a * b; };
 			exports.multiply = multiply;
 		});
 	`)
@@ -48,10 +30,43 @@ func TestEvaluateCtx(t *testing.T) {
 		script := "import { multiply } from 'myModule'; multiply(5, 5)"
 		result, err := EvaluateCtx(context.Background(), strings.NewReader(script),
 			WithAlmondModuleLoader(),
-			WithTranspile(true),
+			WithTranspile(),
 			WithEvaluateBefore(strings.NewReader(amdModuleScript)),
-			WithTranspileOptions(WithVerbose()))
+			WithTranspileOptions(func(config *Config) {
+				config.Verbose = true
+			}))
 		require.NoError(t, err)
-		require.Equal(t, int64(30), result.ToInteger())
+		require.Equal(t, int64(25), result.ToInteger())
+	})
+
+	// Ensures the context cancellation works correctly with the goja runtime
+	t.Run("context cancellation", func(t *testing.T) {
+		ctx, cancel := context.WithCancel(context.Background())
+		cancel()
+		result, err := EvaluateCtx(ctx, strings.NewReader("var a = 10;"))
+		fmt.Println(err)
+		require.True(t, errors.Is(err, context.Canceled))
+		require.Nil(t, result)
+	})
+
+	// A syntax error in the evaluate befores should return an error
+	t.Run("evaluate 'evaluate before' error", func(t *testing.T) {
+		_, err := Evaluate(strings.NewReader("var a = 10;"),
+			WithEvaluateBefore(strings.NewReader("let a: number = 10;")))
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "evaluating evaluate befores: SyntaxError")
+	})
+
+	t.Run("unreadable 'evaluate before'", func(t *testing.T) {
+		_, err := Evaluate(strings.NewReader("var a = 10;"),
+			WithEvaluateBefore(&failingReader{}))
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "reading evaluate befores")
 	})
 }
+
+var _ io.Reader = &failingReader{}
+
+type failingReader struct{}
+
+func (f *failingReader) Read(p []byte) (n int, err error) { return 0, fmt.Errorf("intentional error") }

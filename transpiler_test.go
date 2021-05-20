@@ -47,3 +47,9 @@ func TestBadConfig(t *testing.T) {
 	_, err := TranspileString("let a: number = 10;", withFailOnInitialize())
 	require.Error(t, err)
 }
+
+func TestTranspile(t *testing.T) {
+	output, err := Transpile(strings.NewReader("let a: number = 10;"))
+	require.NoError(t, err)
+	require.Equal(t, "var a = 10;", output)
+}

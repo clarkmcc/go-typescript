@@ -50,9 +50,9 @@ func WithAlmondModuleLoader() EvaluateOptionFunc {
 
 // WithTranspile indicates whether the provided script should be transpiled before it is evaluated. This does not
 // mean that all the evaluate before's will be transpiled as well, only the src provided to EvaluateCtx will be transpiled
-func WithTranspile(transpile bool) EvaluateOptionFunc {
+func WithTranspile() EvaluateOptionFunc {
 	return func(cfg *EvaluateConfig) {
-		cfg.Transpile = transpile
+		cfg.Transpile = true
 	}
 }
 
@@ -63,6 +63,12 @@ func WithTranspileOptions(opts ...TranspileOptionFunc) EvaluateOptionFunc {
 	}
 }
 
+// Evaluate calls EvaluateCtx using the default background context
+func Evaluate(src io.Reader, opts ...EvaluateOptionFunc) (goja.Value, error) {
+	return EvaluateCtx(context.Background(), src, opts...)
+}
+
+// EvaluateCtx evaluates the provided src using the specified options and returns the goja value result or an error.
 func EvaluateCtx(ctx context.Context, src io.Reader, opts ...EvaluateOptionFunc) (result goja.Value, err error) {
 	cfg := &EvaluateConfig{}
 	cfg.ApplyDefaults()
@@ -70,15 +76,21 @@ func EvaluateCtx(ctx context.Context, src io.Reader, opts ...EvaluateOptionFunc)
 		fn(cfg)
 	}
 	done := make(chan struct{})
+	started := make(chan struct{})
 	defer close(done)
 	go func() {
+		// Inform the parent go-routine that we've started, this prevents a race condition where the
+		// runtime would beat the context cancellation in unit tests even though the context started
+		// out in a 'cancelled' state.
+		close(started)
 		select {
 		case <-ctx.Done():
-			cfg.Runtime.Interrupt("halt")
+			cfg.Runtime.Interrupt("context halt")
 		case <-done:
 			return
 		}
 	}()
+	<-started
 	if cfg.HasEvaluateBefore() {
 		for _, s := range cfg.EvaluateBefore {
 			b, err := ioutil.ReadAll(s)
@@ -105,7 +117,11 @@ func EvaluateCtx(ctx context.Context, src io.Reader, opts ...EvaluateOptionFunc)
 				return nil, fmt.Errorf("setting exports object: %w", err)
 			}
 		}
-		opts := []TranspileOptionFunc{WithRuntime(cfg.Runtime)}
+		opts := []TranspileOptionFunc{
+			// We handle our own runtime with our own cancellation
+			WithRuntime(cfg.Runtime),
+			WithPreventCancellation(),
+		}
 		for _, opt := range cfg.TranspileOptions {
 			opts = append(opts, opt)
 		}
@@ -114,5 +130,11 @@ func EvaluateCtx(ctx context.Context, src io.Reader, opts ...EvaluateOptionFunc)
 			return nil, fmt.Errorf("transpiling script: %w", err)
 		}
 	}
-	return cfg.Runtime.RunString(script)
+	result, err = cfg.Runtime.RunString(script)
+	if err != nil {
+		if strings.Contains(err.Error(), "context halt") {
+			err = context.Canceled
+		}
+	}
+	return
 }
