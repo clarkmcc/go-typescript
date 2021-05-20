@@ -49,14 +49,14 @@ func main() {
 You can evaluate pure Javascript code with:
 
 ```go
-result, err := Evaluate(strings.NewReader('var a = 10;')) // returns 10;
+result, err := Evaluate(strings.NewReader("var a = 10;")) // returns 10;
 ```
 
 ### Transpile and Evaluate
 Or you can transpile first:
 
 ```go
-result, err := Evaluate(strings.NewReader('let a: number = 10;'), WithTranspile()) // returns 10;
+result, err := Evaluate(strings.NewReader("let a: number = 10;"), WithTranspile()) // returns 10;
 ```
 
 ### Run Script with AMD Modules
