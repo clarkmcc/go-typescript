@@ -70,7 +70,26 @@ func TestCustomRegistry(t *testing.T) {
 	registry := versions.NewRegistry()
 	registry.MustRegister("v4.2.3", v423.Source)
 
-	output, err := TranspileString("let a: number = 10;", WithVersion("v4.2.3"))
+	output, err := TranspileString("let a: number = 10;", func(config *Config) {
+		config.TypescriptSource = registry.MustGet("v4.2.3")
+	})
+	require.NoError(t, err)
+	require.Equal(t, "var a = 10;", output)
+}
+
+func TestWithModuleName(t *testing.T) {
+	output, err := TranspileString("let a: number = 10;",
+		WithModuleName("myModuleName"),
+		WithCompileOptions(map[string]interface{}{
+			"module": "amd",
+		}))
+	require.NoError(t, err)
+	require.Contains(t, output, "define(\"myModuleName\"")
+}
+
+func TestWithTypescriptSource(t *testing.T) {
+	output, err := TranspileString("let a: number = 10;",
+		WithTypescriptSource(v423.Source))
 	require.NoError(t, err)
 	require.Equal(t, "var a = 10;", output)
 }

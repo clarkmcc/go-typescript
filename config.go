@@ -72,6 +72,15 @@ func WithVersion(tag string) TranspileOptionFunc {
 	}
 }
 
+// WithTypescriptSource configures a Typescript source from the provided typescript source string which
+// is compiled by goja when the config is initialized. This function will panic if the Typescript source
+// is invalid.
+func WithTypescriptSource(src string) TranspileOptionFunc {
+	return func(config *Config) {
+		config.TypescriptSource = goja.MustCompile("", src, true)
+	}
+}
+
 // WithCompileOptions sets the compile options that will be passed to the typescript compiler.
 func WithCompileOptions(options map[string]interface{}) TranspileOptionFunc {
 	return func(config *Config) {
