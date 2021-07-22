@@ -20,6 +20,8 @@ type EvaluateConfig struct {
 	// before evaluation. If an error is returned from any of these functions, the evaluation process is aborted.
 	// The script hook can make modifications and return them to the script if necessary.
 	ScriptHooks []func(string) (string, error)
+	// ScriptPreTranspileHooks are called before transpiling (if applicable) with the script that will be evaluated
+	ScriptPreTranspileHooks []func(string) (string, error)
 	// Transpile indicates whether the script should be transpiled before its evaluated in the runtime.
 	Transpile bool
 	// TranspileOptions are options passed directly to the transpiler if applicable
@@ -78,6 +80,13 @@ func WithTranspileOptions(opts ...TranspileOptionFunc) EvaluateOptionFunc {
 func WithScriptHook(hook func(script string) (string, error)) EvaluateOptionFunc {
 	return func(cfg *EvaluateConfig) {
 		cfg.ScriptHooks = append(cfg.ScriptHooks, hook)
+	}
+}
+
+// WithScriptPreTranspileHook adds a script hook that should be evaluated immediately before transpiling the script
+func WithScriptPreTranspileHook(hook func(script string) (string, error)) EvaluateOptionFunc {
+	return func(cfg *EvaluateConfig) {
+		cfg.ScriptPreTranspileHooks = append(cfg.ScriptPreTranspileHooks, hook)
 	}
 }
 
@@ -142,6 +151,12 @@ func EvaluateCtx(ctx context.Context, src io.Reader, opts ...EvaluateOptionFunc)
 		}
 		for _, opt := range cfg.TranspileOptions {
 			opts = append(opts, opt)
+		}
+		for _, h := range cfg.ScriptPreTranspileHooks {
+			script, err = h(script)
+			if err != nil {
+				return nil, fmt.Errorf("running script pre-transpile hook: %w", err)
+			}
 		}
 		script, err = TranspileCtx(ctx, strings.NewReader(script), opts...)
 		if err != nil {
