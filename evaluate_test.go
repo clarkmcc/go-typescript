@@ -65,6 +65,18 @@ func TestEvaluateCtx(t *testing.T) {
 		require.Contains(t, err.Error(), "reading evaluate befores")
 	})
 
+	t.Run("with goja ES6 support", func(t *testing.T) {
+		// Template literals
+		result, err := Evaluate(strings.NewReader("var a = 10; `${a}`"))
+		require.NoError(t, err)
+		require.Equal(t, "10", result.Export())
+
+		// Arrow functions
+		result, err = Evaluate(strings.NewReader("(() => 10)();"))
+		require.NoError(t, err)
+		require.Equal(t, int64(10), result.Export())
+	})
+
 	t.Run("custom runtime", func(t *testing.T) {
 		runtime := goja.New()
 		result, err := Evaluate(strings.NewReader("var a = 10; a;"),
