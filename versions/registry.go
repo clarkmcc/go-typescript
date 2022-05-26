@@ -54,6 +54,14 @@ func (r *Registry) MustGet(tag string) *goja.Program {
 	return source
 }
 
+// RegisteredVersions returns an unordered list of the versions that are registered in this registry
+func (r *Registry) RegisteredVersions() (out []string) {
+	for k, _ := range r.versions {
+		out = append(out, k)
+	}
+	return
+}
+
 // supportedVersionsLocked returns a slice of supported version tags that are registered
 // to this registry and can be accessed by calling Get. This function should only be called
 // by a caller who has already acquired a lock on the registry.

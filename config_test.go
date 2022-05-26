@@ -11,6 +11,8 @@ import (
 	_ "github.com/clarkmcc/go-typescript/versions/v4.1.5"
 	_ "github.com/clarkmcc/go-typescript/versions/v4.2.2"
 	v423 "github.com/clarkmcc/go-typescript/versions/v4.2.3"
+	_ "github.com/clarkmcc/go-typescript/versions/v4.2.4"
+	_ "github.com/clarkmcc/go-typescript/versions/v4.7.2"
 	"github.com/stretchr/testify/require"
 	"testing"
 )
@@ -66,6 +68,11 @@ func TestVersionLoading(t *testing.T) {
 	})
 	t.Run("v4.2.4", func(t *testing.T) {
 		output, err := TranspileString("let a: number = 10;", WithVersion("v4.2.4"))
+		require.NoError(t, err)
+		require.Equal(t, "var a = 10;", output)
+	})
+	t.Run("v4.7.2", func(t *testing.T) {
+		output, err := TranspileString("let a: number = 10;", WithVersion("v4.7.2"))
 		require.NoError(t, err)
 		require.Equal(t, "var a = 10;", output)
 	})

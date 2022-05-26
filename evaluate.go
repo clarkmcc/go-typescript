@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/clarkmcc/go-typescript/packages"
-	_ "github.com/clarkmcc/go-typescript/versions/v4.2.3"
+	_ "github.com/clarkmcc/go-typescript/versions/v4.7.2"
 	"github.com/dop251/goja"
 	"io"
 	"io/ioutil"

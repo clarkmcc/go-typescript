@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/clarkmcc/go-typescript/utils"
 	"github.com/clarkmcc/go-typescript/versions"
-	_ "github.com/clarkmcc/go-typescript/versions/v4.2.4"
+	_ "github.com/clarkmcc/go-typescript/versions/v4.7.2"
 	"github.com/dop251/goja"
 )
 
@@ -60,7 +60,7 @@ func NewDefaultConfig() *Config {
 	return &Config{
 		Runtime:          goja.New(),
 		CompileOptions:   nil,
-		TypescriptSource: versions.DefaultRegistry.MustGet("v4.2.4"),
+		TypescriptSource: versions.DefaultRegistry.MustGet("v4.7.2"),
 		ModuleName:       "default",
 	}
 }

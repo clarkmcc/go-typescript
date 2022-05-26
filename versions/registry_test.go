@@ -27,6 +27,9 @@ func TestRegistry_Register(t *testing.T) {
 		err := r.Register("a", "type a struct{}")
 		require.Error(t, err)
 	})
+	t.Run("RegisteredVersions", func(t *testing.T) {
+		require.Len(t, r.RegisteredVersions(), 1)
+	})
 }
 
 func TestRegistry_MustGet(t *testing.T) {
