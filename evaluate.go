@@ -3,12 +3,13 @@ package typescript
 import (
 	"context"
 	"fmt"
-	"github.com/clarkmcc/go-typescript/packages"
-	_ "github.com/clarkmcc/go-typescript/versions/v4.7.2"
-	"github.com/dop251/goja"
 	"io"
 	"io/ioutil"
 	"strings"
+
+	"github.com/clarkmcc/go-typescript/packages"
+	_ "github.com/clarkmcc/go-typescript/versions/v4.7.2"
+	"github.com/dop251/goja"
 )
 
 type EvaluateOptionFunc func(cfg *EvaluateConfig)
@@ -102,22 +103,8 @@ func EvaluateCtx(ctx context.Context, src io.Reader, opts ...EvaluateOptionFunc)
 	for _, fn := range opts {
 		fn(cfg)
 	}
-	done := make(chan struct{})
-	started := make(chan struct{})
+	done := startInterruptable(ctx, cfg.Runtime)
 	defer close(done)
-	go func() {
-		// Inform the parent go-routine that we've started, this prevents a race condition where the
-		// runtime would beat the context cancellation in unit tests even though the context started
-		// out in a 'cancelled' state.
-		close(started)
-		select {
-		case <-ctx.Done():
-			cfg.Runtime.Interrupt("context halt")
-		case <-done:
-			return
-		}
-	}()
-	<-started
 	if cfg.HasEvaluateBefore() {
 		for _, s := range cfg.EvaluateBefore {
 			b, err := ioutil.ReadAll(s)
@@ -130,6 +117,7 @@ func EvaluateCtx(ctx context.Context, src io.Reader, opts ...EvaluateOptionFunc)
 			}
 		}
 	}
+
 	b, err := ioutil.ReadAll(src)
 	if err != nil {
 		return nil, fmt.Errorf("reading src: %w", err)
@@ -149,9 +137,7 @@ func EvaluateCtx(ctx context.Context, src io.Reader, opts ...EvaluateOptionFunc)
 			WithRuntime(cfg.Runtime),
 			WithPreventCancellation(),
 		}
-		for _, opt := range cfg.TranspileOptions {
-			opts = append(opts, opt)
-		}
+		opts = append(opts, cfg.TranspileOptions...)
 		for _, h := range cfg.ScriptPreTranspileHooks {
 			script, err = h(script)
 			if err != nil {

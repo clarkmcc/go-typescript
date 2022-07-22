@@ -30,22 +30,8 @@ func TranspileCtx(ctx context.Context, script io.Reader, opts ...TranspileOption
 	}
 	// Handle context cancellation
 	if !cfg.PreventCancellation {
-		done := make(chan struct{})
-		started := make(chan struct{})
+		done := startInterruptable(ctx, cfg.Runtime)
 		defer close(done)
-		go func() {
-			// Inform the parent go-routine that we've started, this prevents a race condition where the
-			// runtime would beat the context cancellation in unit tests even though the context started
-			// out in a 'cancelled' state.
-			close(started)
-			select {
-			case <-ctx.Done():
-				cfg.Runtime.Interrupt("halt")
-			case <-done:
-				return
-			}
-		}()
-		<-started
 	}
 	err := cfg.Initialize()
 	if err != nil {
