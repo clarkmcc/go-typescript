@@ -1,6 +1,7 @@
 package versions
 
 import (
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"testing"
 )
@@ -14,6 +15,11 @@ func TestRegistry_Get(t *testing.T) {
 	t.Run("UnknownTag", func(t *testing.T) {
 		_, err := DefaultRegistry.Get("abc")
 		require.Error(t, err)
+	})
+	t.Run("MustGet", func(t *testing.T) {
+		assert.NotPanics(t, func() {
+			DefaultRegistry.MustGet("v4.2.3")
+		})
 	})
 }
 

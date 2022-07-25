@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/dop251/goja"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"io"
 	"strings"
@@ -93,6 +94,17 @@ func TestEvaluateCtx(t *testing.T) {
 				return script, nil
 			}))
 		require.NoError(t, err)
+	})
+
+	t.Run("pre-transpile hook", func(t *testing.T) {
+		s1 := "let a: number = 10"
+		_, err := Evaluate(strings.NewReader(s1),
+			WithTranspile(),
+			WithScriptPreTranspileHook(func(s2 string) (string, error) {
+				assert.Equal(t, s1, s2)
+				return s2, nil
+			}))
+		assert.NoError(t, err)
 	})
 }
 
