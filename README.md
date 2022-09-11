@@ -12,7 +12,7 @@ This package provides a thin wrapper around [goja](https://github.com/dop251/goj
     go get github.com/clarkmcc/go-typescript
 
 ## Examples
-* [Transpile Typescript](examples/typescript_evaluate_test.go)
+* [Transpile Typescript](examples/typescript_test.go)
 * [Transpile and Evaluate Typescript](examples/typescript_evaluate_test.go)
 * [AMD Modules](examples/typescript_amd_modules_test.go)
 * [Context Cancellation](examples/typescript_context_test.go)
