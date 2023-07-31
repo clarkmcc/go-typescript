@@ -3,9 +3,10 @@ package typescript
 import (
 	"encoding/base64"
 	"fmt"
+
 	"github.com/clarkmcc/go-typescript/utils"
 	"github.com/clarkmcc/go-typescript/versions"
-	_ "github.com/clarkmcc/go-typescript/versions/v4.9.3"
+	_ "github.com/clarkmcc/go-typescript/versions/v5.1.6"
 	"github.com/dop251/goja"
 )
 
@@ -60,7 +61,7 @@ func NewDefaultConfig() *Config {
 	return &Config{
 		Runtime:          goja.New(),
 		CompileOptions:   nil,
-		TypescriptSource: versions.DefaultRegistry.MustGet("v4.9.3"),
+		TypescriptSource: versions.DefaultRegistry.MustGet("v5.1.6"),
 		ModuleName:       "default",
 	}
 }
