@@ -2,8 +2,9 @@ package versions
 
 import (
 	"fmt"
-	"github.com/dop251/goja"
 	"sync"
+
+	"github.com/dop251/goja"
 )
 
 // DefaultRegistry is the default instance of the typescript tagged version registry.
@@ -56,7 +57,7 @@ func (r *Registry) MustGet(tag string) *goja.Program {
 
 // RegisteredVersions returns an unordered list of the versions that are registered in this registry
 func (r *Registry) RegisteredVersions() (out []string) {
-	for k, _ := range r.versions {
+	for k := range r.versions {
 		out = append(out, k)
 	}
 	return
@@ -66,7 +67,7 @@ func (r *Registry) RegisteredVersions() (out []string) {
 // to this registry and can be accessed by calling Get. This function should only be called
 // by a caller who has already acquired a lock on the registry.
 func (r *Registry) supportedVersionsLocked() (out []string) {
-	for k, _ := range r.versions {
+	for k := range r.versions {
 		out = append(out, k)
 	}
 	return

@@ -1,5 +1,7 @@
 ![](assets/banner.png)
 
+# Now with TypeScript (5.1.6) version inside!
+
 This package provides a thin wrapper around [goja](https://github.com/dop251/goja) (a native Javascript runtime for Go). There are no direct dependencies besides goja, and [testify](https://github.com/stretchr/testify) (for testing only). This package supports the following features:
 * Typescript compilation and evaluation.
 * A context-aware evaluation API to support cancellation.
