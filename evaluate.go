@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/clarkmcc/go-typescript/packages"
-	_ "github.com/clarkmcc/go-typescript/versions/v4.7.2"
+	_ "github.com/clarkmcc/go-typescript/versions/v4.9.3"
 	"github.com/dop251/goja"
 )
 
