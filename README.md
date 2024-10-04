@@ -6,6 +6,7 @@ This package provides a thin wrapper around [goja](https://github.com/dop251/goj
 * AMD-style modules using the built-in [Almond module loader](https://github.com/requirejs/almond).
 * Custom Typescript version registration with built-in support for versions 3.8.3, 3.9.9, 4.1.2, 4.1.3, 4.1.4, 4.1.5, 4.2.2, 4.2.3, 4.2.4, and 4.7.2.
 * 90%+ test coverage
+* Used in production world-wide (sponsoring company has evaluated over 1 billion scripts using this runtime)
 
 ## Installation
 

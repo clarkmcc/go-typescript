@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/clarkmcc/go-typescript/versions"
+	v4_9_3 "github.com/clarkmcc/go-typescript/versions/v4.9.3"
 	"github.com/dop251/goja"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -24,6 +26,9 @@ var (
 )
 
 func TestEvaluateCtx(t *testing.T) {
+	registry := versions.NewRegistry()
+	registry.Register("v4.9.3", v4_9_3.Source)
+
 	// This test hits a lot of things:
 	//  #1 - We test that we can load the almond AMD module loader
 	//  #2 - We test that we can load our own 'evaluate before' script that declares an AMD module
@@ -33,6 +38,8 @@ func TestEvaluateCtx(t *testing.T) {
 		result, err := EvaluateCtx(context.Background(), strings.NewReader(script),
 			WithAlmondModuleLoader(),
 			WithTranspile(),
+			WithTranspileOptions(WithRegistry(registry),
+				WithVersion("v4.9.3")),
 			WithEvaluateBefore(strings.NewReader(amdModuleScript)),
 			WithTranspileOptions(func(config *Config) {
 				config.Verbose = true
@@ -100,6 +107,8 @@ func TestEvaluateCtx(t *testing.T) {
 		s1 := "let a: number = 10"
 		_, err := Evaluate(strings.NewReader(s1),
 			WithTranspile(),
+			WithTranspileOptions(WithRegistry(registry),
+				WithVersion("v4.9.3")),
 			WithScriptPreTranspileHook(func(s2 string) (string, error) {
 				assert.Equal(t, s1, s2)
 				return s2, nil

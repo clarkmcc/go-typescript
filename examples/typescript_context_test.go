@@ -5,6 +5,8 @@ import (
 	_ "embed"
 	"fmt"
 	"github.com/clarkmcc/go-typescript"
+	"github.com/clarkmcc/go-typescript/versions"
+	v4_9_3 "github.com/clarkmcc/go-typescript/versions/v4.9.3"
 	"strings"
 )
 
@@ -15,7 +17,13 @@ func ExampleContext() {
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
 
-	_, err := typescript.TranspileCtx(ctx, strings.NewReader(script3))
+	registry := versions.NewRegistry()
+	registry.Register("v4.9.3", v4_9_3.Source)
+
+	_, err := typescript.TranspileCtx(ctx,
+		strings.NewReader(script3),
+		typescript.WithRegistry(registry),
+		typescript.WithVersion("v4.9.3"))
 	if err == nil {
 		panic("expected error")
 	}

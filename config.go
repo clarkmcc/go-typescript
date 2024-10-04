@@ -14,9 +14,10 @@ type TranspileOptionFunc func(*Config)
 
 // Config defines the behavior of the typescript compiler.
 type Config struct {
-	CompileOptions   map[string]interface{}
-	TypescriptSource *goja.Program
-	Runtime          *goja.Runtime
+	CompileOptions    map[string]interface{}
+	TypescriptVersion string
+	Registry          versions.Registry
+	Runtime           *goja.Runtime
 
 	// If a module is exported by the typescript compiler, this is the name the module will be called
 	ModuleName string
@@ -58,26 +59,24 @@ func (c *Config) Initialize() error {
 // typescript source code.s
 func NewDefaultConfig() *Config {
 	return &Config{
-		Runtime:          goja.New(),
-		CompileOptions:   nil,
-		TypescriptSource: versions.DefaultRegistry.MustGet("v4.9.3"),
-		ModuleName:       "default",
+		Runtime:           goja.New(),
+		CompileOptions:    nil,
+		TypescriptVersion: "v4.9.3",
+		Registry:          versions.NewRegistry(),
+		ModuleName:        "default",
+	}
+}
+
+func WithRegistry(registry versions.Registry) TranspileOptionFunc {
+	return func(config *Config) {
+		config.Registry = registry
 	}
 }
 
 // WithVersion loads the provided tagged typescript source from the default registry
 func WithVersion(tag string) TranspileOptionFunc {
 	return func(config *Config) {
-		config.TypescriptSource = versions.DefaultRegistry.MustGet(tag)
-	}
-}
-
-// WithTypescriptSource configures a Typescript source from the provided typescript source string which
-// is compiled by goja when the config is initialized. This function will panic if the Typescript source
-// is invalid.
-func WithTypescriptSource(src string) TranspileOptionFunc {
-	return func(config *Config) {
-		config.TypescriptSource = goja.MustCompile("", src, true)
+		config.TypescriptVersion = tag
 	}
 }
 
