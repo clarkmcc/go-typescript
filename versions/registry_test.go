@@ -1,12 +1,19 @@
 package versions
 
 import (
+	"testing"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func TestRegistry_Get(t *testing.T) {
+	// 5.x test
+	t.Run("KnownTag", func(t *testing.T) {
+		DefaultRegistry.MustRegister("v5.1.6", "")
+		_, err := DefaultRegistry.Get("v5.1.6")
+		require.NoError(t, err)
+	})
 	t.Run("KnownTag", func(t *testing.T) {
 		DefaultRegistry.MustRegister("v4.2.3", "")
 		_, err := DefaultRegistry.Get("v4.2.3")
