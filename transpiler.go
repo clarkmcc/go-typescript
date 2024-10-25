@@ -37,7 +37,11 @@ func TranspileCtx(ctx context.Context, script io.Reader, opts ...TranspileOption
 	if err != nil {
 		return "", fmt.Errorf("initializing config: %w", err)
 	}
-	_, err = cfg.Runtime.RunProgram(cfg.TypescriptSource)
+	src, err := cfg.Registry.Get(cfg.TypescriptVersion)
+	if err != nil {
+		return "", fmt.Errorf("getting typescript source: %w", err)
+	}
+	_, err = cfg.Runtime.RunProgram(src)
 	if err != nil {
 		return "", fmt.Errorf("running typescript compiler: %w", err)
 	}
